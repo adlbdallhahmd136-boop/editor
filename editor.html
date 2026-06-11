@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CodeX Editor - محرر الأكواد المتكامل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background: #0a0a14;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* هيدر صغير */
+        .header {
+            background: #7b2ff7;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            min-height: 56px;
+        }
+
+        .right-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .left-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .current-file-name {
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .logo img {
+            height: 40px;
+            max-width: 60px;
+            object-fit: contain;
+        }
+
+        .copy-btn, .play-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .copy-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        .play-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* القائمة المنسدلة */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 56px;
+            left: 12px;
+            background: #1e1e36;
+            border: 1px solid #6c63ff;
+            border-radius: 12px;
+            width: 280px;
+            max-height: 380px;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            padding: 8px 0;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .menu-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 8px;
+            border-bottom: 1px solid #6c63ff;
+            margin-bottom: 4px;
+        }
+
+        .menu-action-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .menu-action-btn svg {
+            width: 22px;
+            height: 22px;
+            stroke: white;
+            fill: none;
+        }
+
+        .file-list-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            gap: 8px;
+            border-bottom: 1px solid rgba(108,99,255,0.2);
+            position: relative;
+        }
+
+        .file-list-item:hover {
+            background: rgba(108,99,255,0.3);
+        }
+
+        .file-list-item .file-icon {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .folder-item {
+            font-weight: bold;
+        }
+
+        .item-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* زر الثلاث نقاط */
+        .three-dots {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: 0.2s;
+        }
+
+        .three-dots:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* زر الحذف المخفي */
+        .delete-action {
+            display: none;
+            background: #e74c3c;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: 0.2s;
+        }
+
+        .delete-action.show {
+            display: inline-block;
+        }
+
+        .add-to-folder-btn {
+            background: #00b894;
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .folder-item.open .add-to-folder-btn {
+            display: flex;
+        }
+
+        .folder-children {
+            padding-right: 20px;
+        }
+
+        /* مساحة الكتابة بخلفية رمادي داكن مع تمييز syntax */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            background: #1e1e1e;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            width: 46px;
+            background: #111;
+            color: #777;
+            padding: 15px 8px 15px 0;
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 1.6;
+            overflow: hidden;
+            user-select: none;
+            border-left: 1px solid #333;
+            white-space: pre;
+            direction: ltr;
+        }
+
+        /* صندوق التحرير مع الـ overlay */
+        .code-editor-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: white;
+            pointer-events: none;
+            background: transparent;
+            overflow-y: auto;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .code-textarea {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            line-height: 1.6;
+            color: transparent;
+            caret-color: white;
+            background: transparent;
+            border: none;
+            resize: none;
+            outline: none;
+            direction: ltr;
+            text-align: left;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        /* مودال من غير إيموجي */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #1a1a30;
+            border: 2px solid #6c63ff;
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal-box h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            justify-content: center;
+        }
+
+        .modal-box h3 svg {
+            width: 22px;
+            height: 22px;
+            stroke: #6c63ff;
+            fill: none;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a18;
+            border: 2px solid #6c63ff;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-confirm {
+            background: #00b894;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-buttons button svg {
+            width: 18px;
+            height: 18px;
+            stroke: white;
+            fill: none;
+        }
+
+        /* معاينة */
+        .preview-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 200;
+        }
+
+        .preview-container.show {
+            display: block;
+        }
+
+        .preview-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .btn-close-preview {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 300;
+            background: #ff3333;
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .btn-close-preview.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ملف الإدخال */
+        #hiddenFileInput {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        /* زر العودة للأعلى */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            left: 20px;            /* علي الشمال */
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #7b2ff7;
+            color: white;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            z-index: 350;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            transition: opacity 0.3s, transform 0.3s;
+            line-height: 1;
+        }
+
+        .back-to-top.show {
+            display: flex;
+        }
+
+        .back-to-top:hover {
+            background: #9b59ff;
+            transform: scale(1.1);
+        }
+
+        .back-to-top svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- هيدر صغير -->
+        <div class="header">
+            <div class="right-section">
+                <button class="copy-btn" onclick="copyCurrentCode()" title="نسخ الكود">
+                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                </button>
+                <button class="play-btn" onclick="runProject()" title="تشغيل">
+                    <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="#00b894"/></svg>
+                </button>
+            </div>
+
+            <div class="logo">
+                <img src="https://e.top4top.io/p_3814i1i5z2.png" alt="CodeX Logo">
+            </div>
+
+            <div class="left-section">
+                <span class="current-file-name" id="currentFileNameDisplay">لا ملف</span>
+                <button class="menu-btn" onclick="toggleMenu()">☰</button>
+            </div>
+        </div>
+
+        <!-- القائمة -->
+        <div class="dropdown-menu" id="dropdownMenu">
+            <div class="menu-actions">
+                <button class="menu-action-btn" onclick="startNewFile()" title="ملف جديد">
+                    <svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                </button>
+                <button class="menu-action-btn" onclick="startNewFolder()" title="مجلد جديد">
+                    <svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </button>
+                <button class="menu-action-btn" onclick="importFile()" title="استيراد ملف">
+                    <svg viewBox="0 0 24 24" stroke="white" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </button>
+            </div>
+            <div id="fileTreeContainer"></div>
+        </div>
+
+        <!-- منطقة الكتابة (رمادي داكن + تمييز syntax) -->
+        <div class="editor-area">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <div class="code-editor-wrapper">
+                <pre class="code-highlight" id="codeHighlight"><code></code></pre>
+                <textarea class="code-textarea" id="codeEditor" placeholder="// اكتب كودك هنا..." disabled></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر العودة للأعلى -->
+    <button id="backToTopBtn" class="back-to-top" title="العودة للأعلى">
+        <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+    </button>
+
+    <!-- مودال إنشاء (بدون إيموجي) -->
+    <div class="modal" id="createModal">
+        <div class="modal-box">
+            <h3 id="modalTitle">
+                <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                <span>ملف جديد</span>
+            </h3>
+            <input type="text" id="modalInput" placeholder="الاسم">
+            <div class="modal-buttons">
+                <button class="btn-confirm" onclick="confirmCreate()">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+                    إنشاء
+                </button>
+                <button class="btn-cancel" onclick="closeCreateModal()">
+                    <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- معاينة -->
+    <div class="preview-container" id="previewContainer">
+        <iframe id="previewFrame"></iframe>
+    </div>
+    <button class="btn-close-preview" id="btnClosePreview" onclick="closePreview()">✕</button>
+
+    <!-- ملف الإدخال للاستيراد -->
+    <input type="file" id="hiddenFileInput" multiple 
+           accept=".html,.css,.js,.json,.txt,text/html,text/css,application/javascript,application/json"
+           onchange="handleFileImport(event)">
+
+    <script>
+        // ============ التخزين ============
+        const STORAGE_KEY = 'codex_editor_tree_v2';
+
+        function saveTree() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(fileTree));
+        }
+
+        function loadTree() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // ============ هيكل الشجرة ============
+        let fileTree = loadTree();
+        let currentFileId = null;
+
+        const currentFileNameDisplay = document.getElementById('currentFileNameDisplay');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const fileTreeContainer = document.getElementById('fileTreeContainer');
+        const codeEditor = document.getElementById('codeEditor');
+        const codeHighlight = document.getElementById('codeHighlight');
+        const lineNumbers = document.getElementById('lineNumbers');
+        const createModal = document.getElementById('createModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalInput = document.getElementById('modalInput');
+        const hiddenFileInput = document.getElementById('hiddenFileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewFrame = document.getElementById('previewFrame');
+        const btnClosePreview = document.getElementById('btnClosePreview');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        let pendingAction = null;
+        let pendingFolderId = null;
+
+        // ============ نظام debounce للتمييز لتجنب التهنيج ============
+        let highlightTimeout;
+        function debouncedHighlight() {
+            clearTimeout(highlightTimeout);
+            highlightTimeout = setTimeout(() => {
+                updateHighlight();
+            }, 250);
+        }
+
+        // ============ تمييز الأكواد (Syntax Highlighting) مع دعم CSS/JS ============
+        function highlightCode(code) {
+            if (!code) return '';
+            const blocks = [];
+            let remaining = code;
+            const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+            const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/gi;
+            let lastIndex = 0;
+            let match;
+
+            const positions = [];
+            while ((match = styleRegex.exec(code)) !== null) {
+                positions.push({ start: match.index, end: match.index + match[0].length, type: 'style', content: match[1] });
+            }
+            while ((match = scriptRegex.exec(code)) !== null) {
+                positions.push({ start: match.index, end: match.index + match[0].length, type: 'script', content: match[1] });
+            }
+            positions.sort((a, b) => a.start - b.start);
+
+            let html = '';
+            let idx = 0;
+            for (const pos of positions) {
+                if (idx < pos.start) {
+                    html += highlightHTMLRegion(code.substring(idx, pos.start));
+                }
+                const outer = code.substring(pos.start, pos.end);
+                const inner = pos.content;
+                const tagPart = outer.substring(0, outer.indexOf('>')+1);
+                const closingTag = outer.substring(outer.lastIndexOf('</'));
+                if (pos.type === 'style') {
+                    html += highlightCSSTag(tagPart) + highlightCSS(inner) + highlightCSSTag(closingTag);
+                } else if (pos.type === 'script') {
+                    html += highlightScriptTag(tagPart) + highlightJS(inner) + highlightScriptTag(closingTag);
+                }
+                idx = pos.end;
+            }
+            if (idx < code.length) {
+                html += highlightHTMLRegion(code.substring(idx));
+            }
+            return html;
+        }
+
+        function highlightHTMLRegion(text) {
+            let result = '';
+            let i = 0;
+            const len = text.length;
+            while (i < len) {
+                if (text[i] === '<') {
+                    let j = i;
+                    while (j < len && text[j] !== '>') j++;
+                    if (j < len) {
+                        result += colorizeTag(text.substring(i, j+1));
+                        i = j+1;
+                    } else {
+                        result += escapeHtml(text.substring(i));
+                        i = len;
+                    }
+                } else {
+                    let j = i;
+                    while (j < len && text[j] !== '<') j++;
+                    result += '<span style="color:#2ecc71;">' + escapeHtml(text.substring(i,j)) + '</span>';
+                    i = j;
+                }
+            }
+            return result;
+        }
+
+        function colorizeTag(tag) {
+            let result = '';
+            let i = 0;
+            const len = tag.length;
+            if (tag[i] === '<') { result += escapeHtml('<'); i++; }
+            if (tag[i] === '/') { result += escapeHtml('/'); i++; }
+            const nameStart = i;
+            while (i < len && /[\w-]/.test(tag[i])) i++;
+            const tagName = tag.substring(nameStart, i);
+            result += '<span style="color:#5dade2;">' + escapeHtml(tagName) + '</span>';
+            let remaining = tag.substring(i);
+            remaining = remaining.replace(/([\w-]+)(\s*=\s*("[^"]*"|'[^']*'))/g, (m, attr, eqAndVal) => {
+                let out = ' <span style="color:#5dade2;">' + escapeHtml(attr) + '</span>';
+                const eqIdx = eqAndVal.indexOf('=');
+                out += escapeHtml(eqAndVal.substring(0, eqIdx+1));
+                const val = eqAndVal.substring(eqIdx+1);
+                out += '<span style="color:#f39c12;">' + escapeHtml(val) + '</span>';
+                return out;
+            });
+            remaining = remaining.replace(/[^<]+/g, txt => escapeHtml(txt));
+            result += remaining;
+            return result;
+        }
+
+        function highlightCSS(css) {
+            return css.replace(/([^{]+)\{([^}]+)\}/g, (match, selector, rules) => {
+                let sel = '<span style="color:#5dade2;">' + escapeHtml(selector.trim()) + '</span> { ';
+                let ruleParts = rules.split(';').map(r => r.trim()).filter(r => r);
+                ruleParts = ruleParts.map(rule => {
+                    let colonIdx = rule.indexOf(':');
+                    if (colonIdx === -1) return escapeHtml(rule);
+                    let prop = rule.substring(0, colonIdx).trim();
+                    let val = rule.substring(colonIdx+1).trim();
+                    let important = '';
+                    if (/!important\s*$/i.test(val)) {
+                        important = ' <span style="color:#9b59b6;">!important</span>';
+                        val = val.replace(/!important\s*$/i, '').trim();
+                    }
+                    return '<span style="color:#f39c12;">' + escapeHtml(prop) + '</span>: ' +
+                           '<span style="color:#2ecc71;">' + escapeHtml(val) + '</span>' + important;
+                });
+                return sel + ruleParts.join('; ') + ' }';
+            });
+        }
+
+        function highlightJS(js) {
+            let result = '';
+            const regex = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\b(?:const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|import|export|default|from|async|await|try|catch|finally|throw|typeof|instanceof)\b|\b[A-Za-z_$][A-Za-z0-9_$]*\b|\d+(?:\.\d+)?|[+\-*/=<>!&|^~%]+|.)/g;
+            let match;
+            while ((match = regex.exec(js)) !== null) {
+                const token = match[0];
+                if (/^["'`]/.test(token)) {
+                    result += '<span style="color:#2ecc71;">' + escapeHtml(token) + '</span>';
+                } else if (/^(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|import|export|default|from|async|await|try|catch|finally|throw|typeof|instanceof)$/.test(token)) {
+                    result += '<span style="color:#5dade2;">' + token + '</span>';
+                } else if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(token)) {
+                    result += '<span style="color:#f39c12;">' + token + '</span>';
+                } else if (/^\d+(\.\d+)?$/.test(token) || /^[+\-*/=<>!&|^~%]+$/.test(token)) {
+                    result += '<span style="color:white;">' + token + '</span>';
+                } else {
+                    result += escapeHtml(token);
+                }
+            }
+            return result;
+        }
+
+        function highlightCSSTag(tag) {
+            return colorizeTag(tag);
+        }
+
+        function highlightScriptTag(tag) {
+            return colorizeTag(tag);
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function updateHighlight() {
+            const code = codeEditor.value;
+            codeHighlight.querySelector('code').innerHTML = highlightCode(code);
+            syncScroll();
+        }
+
+        function syncScroll() {
+            codeHighlight.scrollTop = codeEditor.scrollTop;
+            codeHighlight.scrollLeft = codeEditor.scrollLeft;
+        }
+
+        // ============ مزامنة أرقام الأسطر (خفيفة جداً) ============
+        function updateLineNumbers() {
+            const lines = codeEditor.value.split('\n').length;
+            let html = '';
+            for (let i = 1; i <= lines; i++) {
+                html += i + '\n';
+            }
+            lineNumbers.textContent = html || '1\n';
+            lineNumbers.scrollTop = codeEditor.scrollTop;
+        }
+
+        // ============ التحكم في زر العودة للأعلى ============
+        function toggleBackToTop() {
+            if (codeEditor.scrollTop > 400) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        }
+
+        // الأحداث - مع debounce للتمييز
+        codeEditor.addEventListener('input', () => {
+            updateLineNumbers();
+            debouncedHighlight();
+        });
+
+        // معالجة اللصق: تحديث فوري للأرقام + تمييز سريع
+        codeEditor.addEventListener('paste', () => {
+            setTimeout(() => {
+                updateLineNumbers();
+                clearTimeout(highlightTimeout);
+                updateHighlight();
+            }, 10);
+        });
+
+        codeEditor.addEventListener('scroll', () => {
+            lineNumbers.scrollTop = codeEditor.scrollTop;
+            syncScroll();
+            toggleBackToTop();   // إظهار/إخفاء زر العودة للأعلى
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            codeEditor.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ============ القائمة ============
+        function toggleMenu() {
+            dropdownMenu.classList.toggle('show');
+            if (dropdownMenu.classList.contains('show')) {
+                renderFileTree();
+            }
+        }
+
+        function closeMenu() {
+            dropdownMenu.classList.remove('show');
+        }
+
+        // ============ رسم الشجرة مع الثلاث نقاط والحذف ============
+        function renderFileTree() {
+            fileTreeContainer.innerHTML = '';
+            renderNodes(fileTree, fileTreeContainer, 0);
+        }
+
+        function renderNodes(nodes, container, level) {
+            nodes.forEach(node => {
+                if (node.type === 'file') {
+                    const item = document.createElement('div');
+                    item.className = 'file-list-item';
+                    item.style.paddingRight = (15 + level * 20) + 'px';
+                    const icon = getFileIconHTML(node.name);
+                    item.innerHTML = `
+                        <span>${icon}</span>
+                        <span class="item-name">${node.name}</span>
+                        <button class="three-dots" data-id="${node.id}">⋮</button>
+                        <button class="delete-action" data-id="${node.id}">🗑 حذف</button>
+                    `;
+                    
+                    item.querySelector('.item-name').addEventListener('click', () => {
+                        selectFile(node);
+                        closeMenu();
+                    });
+
+                    const dotsBtn = item.querySelector('.three-dots');
+                    const delBtn = item.querySelector('.delete-action');
+                    dotsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        delBtn.classList.toggle('show');
+                    });
+
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm(`حذف الملف "${node.name}"؟`)) {
+                            deleteNodeById(node.id);
+                        }
+                    });
+
+                    container.appendChild(item);
+                } else if (node.type === 'folder') {
+                    const folderDiv = document.createElement('div');
+                    folderDiv.className = 'file-list-item folder-item';
+                    folderDiv.style.paddingRight = (15 + level * 20) + 'px';
+                    folderDiv.innerHTML = `
+                        <span class="folder-icon">📁</span>
+                        <span class="item-name">${node.name}</span>
+                        <button class="three-dots" data-id="${node.id}">⋮</button>
+                        <button class="delete-action" data-id="${node.id}">🗑 حذف</button>
+                        <button class="add-to-folder-btn" title="إضافة ملفات">+</button>
+                    `;
+
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.className = 'folder-children';
+                    childrenContainer.style.display = 'none';
+
+                    const dotsBtn = folderDiv.querySelector('.three-dots');
+                    const delBtn = folderDiv.querySelector('.delete-action');
+                    dotsBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        delBtn.classList.toggle('show');
+                    });
+
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (confirm(`حذف المجلد "${node.name}" وجميع محتوياته؟`)) {
+                            deleteNodeById(node.id);
+                        }
+                    });
+
+                    folderDiv.querySelector('.item-name').addEventListener('click', () => {
+                        childrenContainer.style.display = childrenContainer.style.display === 'none' ? 'block' : 'none';
+                        folderDiv.classList.toggle('open');
+                    });
+
+                    folderDiv.querySelector('.add-to-folder-btn').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        pendingFolderId = node.id;
+                        hiddenFileInput.click();
+                    });
+
+                    container.appendChild(folderDiv);
+                    container.appendChild(childrenContainer);
+                    if (node.children && node.children.length > 0) {
+                        renderNodes(node.children, childrenContainer, level + 1);
+                    }
+                }
+            });
+        }
+
+        function deleteNodeById(id) {
+            function removeFromArray(arr) {
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i].id === id) {
+                        arr.splice(i, 1);
+                        return true;
+                    }
+                    if (arr[i].children && arr[i].children.length > 0) {
+                        if (removeFromArray(arr[i].children)) return true;
+                    }
+                }
+                return false;
+            }
+
+            if (removeFromArray(fileTree)) {
+                if (currentFileId === id) {
+                    currentFileId = null;
+                    currentFileNameDisplay.textContent = 'لا ملف';
+                    codeEditor.value = '';
+                    codeEditor.disabled = true;
+                    updateLineNumbers();
+                    updateHighlight();
+                }
+                saveTree();
+                renderFileTree();
+            }
+        }
+
+        function getFileIconHTML(filename) {
+            if (filename.endsWith('.html')) return '<img src="https://i.top4top.io/p_3814d46fv2.png" class="file-icon" alt="HTML">';
+            if (filename.endsWith('.css')) return '<img src="https://h.top4top.io/p_3814pugha1.png" class="file-icon" alt="CSS">';
+            if (filename.endsWith('.js')) return '<img src="https://g.top4top.io/p_38144dwh50.png" class="file-icon" alt="JS">';
+            if (filename.endsWith('.json')) return '📋';
+            return '📄';
+        }
+
+        function selectFile(node) {
+            if (currentFileId) saveCurrentFileContent();
+            currentFileId = node.id;
+            currentFileNameDisplay.textContent = node.name;
+            codeEditor.value = node.content || '';
+            codeEditor.disabled = false;
+            codeEditor.placeholder = '// اكتب كود ' + node.name + ' هنا...';
+            updateLineNumbers();
+            clearTimeout(highlightTimeout);
+            updateHighlight();
+            // إعادة فحص زر العودة للأعلى بعد تحميل الملف
+            toggleBackToTop();
+        }
+
+        function saveCurrentFileContent() {
+            const node = findNodeById(fileTree, currentFileId);
+            if (node && node.type === 'file') {
+                node.content = codeEditor.value;
+                saveTree();
+            }
+        }
+
+        function findNodeById(nodes, id) {
+            for (let node of nodes) {
+                if (node.id === id) return node;
+                if (node.children) {
+                    const found = findNodeById(node.children, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        let saveTimeout;
+        codeEditor.addEventListener('input', () => {
+            if (currentFileId) {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    const node = findNodeById(fileTree, currentFileId);
+                    if (node && node.type === 'file') {
+                        node.content = codeEditor.value;
+                        saveTree();
+                    }
+                }, 300);
+            }
+        });
+
+        // ============ إنشاء ملف/مجلد ============
+        function startNewFile() {
+            pendingAction = 'file';
+            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            <span>ملف جديد</span>`;
+            modalInput.value = '';
+            createModal.classList.add('show');
+            setTimeout(() => modalInput.focus(), 100);
+            closeMenu();
+        }
+
+        function startNewFolder() {
+            pendingAction = 'folder';
+            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span>مجلد جديد</span>`;
+            modalInput.value = '';
+            createModal.classList.add('show');
+            setTimeout(() => modalInput.focus(), 100);
+            closeMenu();
+        }
+
+        function confirmCreate() {
+            const name = modalInput.value.trim();
+            if (!name) {
+                alert('⚠️ اكتب الاسم');
+                return;
+            }
+
+            if (pendingAction === 'file') {
+                const newFile = {
+                    id: Date.now().toString(),
+                    name: name,
+                    type: 'file',
+                    content: name.endsWith('.html') ? '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title></title>\n</head>\n<body>\n  \n</body>\n</html>' : ''
+                };
+                fileTree.push(newFile);
+            } else if (pendingAction === 'folder') {
+                const newFolder = {
+                    id: Date.now().toString(),
+                    name: name,
+                    type: 'folder',
+                    children: []
+                };
+                fileTree.push(newFolder);
+            }
+
+            saveTree();
+            closeCreateModal();
+            renderFileTree();
+        }
+
+        function closeCreateModal() {
+            createModal.classList.remove('show');
+            pendingAction = null;
+        }
+
+        // ============ استيراد ============
+        function importFile() {
+            pendingFolderId = null;
+            hiddenFileInput.value = '';
+            hiddenFileInput.click();
+            closeMenu();
+        }
+
+        function handleFileImport(event) {
+            const files = event.target.files;
+            if (!files.length) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const newFile = {
+                        id: Date.now().toString() + Math.random(),
+                        name: file.name,
+                        type: 'file',
+                        content: content
+                    };
+
+                    if (pendingFolderId) {
+                        const folder = findNodeById(fileTree, pendingFolderId);
+                        if (folder) folder.children.push(newFile);
+                    } else {
+                        fileTree.push(newFile);
+                    }
+                    saveTree();
+                    renderFileTree();
+                };
+                reader.readAsText(file);
+            });
+
+            hiddenFileInput.value = '';
+            pendingFolderId = null;
+        }
+
+        // ============ نسخ ============
+        function copyCurrentCode() {
+            if (!currentFileId) {
+                alert('⚠️ لا يوجد ملف مفتوح');
+                return;
+            }
+            const node = findNodeById(fileTree, currentFileId);
+            if (node) {
+                navigator.clipboard.writeText(node.content || '').then(() => {
+                    alert('✅ تم نسخ الكود');
+                }).catch(() => alert('فشل النسخ'));
+            }
+        }
+
+        // ============ تشغيل ============
+        function runProject() {
+            if (currentFileId) {
+                saveCurrentFileContent();
+            }
+
+            const allFiles = [];
+            function flatten(nodes) {
+                nodes.forEach(node => {
+                    if (node.type === 'file') allFiles.push(node);
+                    if (node.children) flatten(node.children);
+                });
+            }
+            flatten(fileTree);
+
+            let htmlContents = [];
+            let cssContents = [];
+            let jsContents = [];
+
+            allFiles.forEach(file => {
+                if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+                    htmlContents.push(file.content);
+                } else if (file.name.endsWith('.css')) {
+                    cssContents.push(file.content);
+                } else if (file.name.endsWith('.js')) {
+                    jsContents.push(file.content);
+                }
+            });
+
+            let final = htmlContents.length > 0 ? htmlContents.join('\n') : '';
+            if (!final.trim()) {
+                final = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>Preview</title></head>\n<body>\n<h1>لا يوجد محتوى</h1>\n</body>\n</html>';
+            }
+
+            if (cssContents.length > 0) {
+                const css = cssContents.join('\n');
+                if (final.includes('</head>')) {
+                    final = final.replace('</head>', '<style>\n' + css + '\n</style>\n</head>');
+                } else if (final.includes('<head>')) {
+                    final = final.replace('<head>', '<head>\n<style>\n' + css + '\n</style>\n');
+                } else {
+                    final = '<style>\n' + css + '\n</style>\n' + final;
+                }
+            }
+
+            if (jsContents.length > 0) {
+                const js = jsContents.join('\n');
+                const scriptTag = '<script>' + js + '<\/script>';
+                if (final.includes('</body>')) {
+                    final = final.replace('</body>', scriptTag + '\n</body>');
+                } else if (final.includes('</html>')) {
+                    final = final.replace('</html>', scriptTag + '\n</html>');
+                } else {
+                    final += '\n' + scriptTag;
+                }
+            }
+
+            previewContainer.classList.add('show');
+            btnClosePreview.classList.add('show');
+            previewFrame.srcdoc = final;
+            window.scrollTo(0, 0);
+        }
+
+        function closePreview() {
+            previewContainer.classList.remove('show');
+            btnClosePreview.classList.remove('show');
+            previewFrame.srcdoc = '';
+        }
+
+        function init() {
+            updateLineNumbers();
+            updateHighlight();
+            if (fileTree.length > 0) {
+                const firstFile = findFirstFile(fileTree);
+                if (firstFile) selectFile(firstFile);
+            }
+            renderFileTree();
+            toggleBackToTop(); // الحالة الأولية
+        }
+
+        function findFirstFile(nodes) {
+            for (let node of nodes) {
+                if (node.type === 'file') return node;
+                if (node.children) {
+                    const found = findFirstFile(node.children);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        init();
+    </script>
+</body>
+</html>
