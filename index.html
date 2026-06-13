@@ -19,6 +19,7 @@
             overflow: hidden;
             position: fixed;
             width: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .app-container {
@@ -28,7 +29,6 @@
             width: 100%;
         }
 
-        /* هيدر صغير */
         .header {
             background: #7b2ff7;
             padding: 8px 12px;
@@ -95,7 +95,93 @@
             height: 24px;
         }
 
-        /* القائمة المنسدلة */
+        /* شريط الأخطاء */
+        .error-bar {
+            background: #000;
+            color: white;
+            padding: 4px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 32px;
+            z-index: 9;
+            position: relative;
+            border-bottom: 1px solid #333;
+        }
+
+        .error-icon {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+        }
+
+        .error-count {
+            background: #e74c3c;
+            color: white;
+            border-radius: 10px;
+            padding: 0 6px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            text-align: center;
+            line-height: 18px;
+        }
+
+        .error-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 12px;
+            background: #1a1a2e;
+            border: 1px solid #e74c3c;
+            border-radius: 8px;
+            width: 400px;
+            max-height: 350px;
+            overflow-y: auto;
+            z-index: 60;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+        }
+
+        .error-panel.show {
+            display: block;
+        }
+
+        .error-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .error-item:hover {
+            background: #2a2a40;
+        }
+
+        .error-file {
+            color: #7b2ff7;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .error-line {
+            color: #e74c3c;
+            margin-right: 8px;
+        }
+
+        .error-message {
+            color: #ccc;
+            flex: 1;
+            text-align: right;
+        }
+
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -172,7 +258,6 @@
             white-space: nowrap;
         }
 
-        /* زر الثلاث نقاط */
         .three-dots {
             background: none;
             border: none;
@@ -190,8 +275,7 @@
             color: white;
         }
 
-        /* زر الحذف المخفي */
-        .delete-action {
+        .delete-action, .rename-action {
             display: none;
             background: #e74c3c;
             border: none;
@@ -204,7 +288,11 @@
             transition: 0.2s;
         }
 
-        .delete-action.show {
+        .rename-action {
+            background: #3498db;
+        }
+
+        .delete-action.show, .rename-action.show {
             display: inline-block;
         }
 
@@ -230,7 +318,6 @@
             padding-right: 20px;
         }
 
-        /* مساحة الكتابة بخلفية رمادي داكن مع تمييز syntax */
         .editor-area {
             flex: 1;
             display: flex;
@@ -247,14 +334,41 @@
             font-family: 'Courier New', monospace;
             font-size: 18px;
             line-height: 1.6;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
             user-select: none;
             border-left: 1px solid #333;
             white-space: pre;
             direction: ltr;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* صندوق التحرير مع الـ overlay */
+        /* إخفاء شريط التمرير الخاص بالأرقام ليبقى متزامناً */
+        .line-numbers::-webkit-scrollbar {
+            display: none;
+        }
+
+        .line-num {
+            display: block;
+            height: 1.6em;
+        }
+
+        .line-num.has-error {
+            background: rgba(231, 76, 60, 0.4);
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .line-num.has-error::after {
+            content: '●';
+            color: #e74c3c;
+            font-size: 10px;
+            position: absolute;
+            left: 2px;
+            top: 2px;
+        }
+
         .code-editor-wrapper {
             flex: 1;
             position: relative;
@@ -279,6 +393,12 @@
             overflow-y: auto;
             direction: ltr;
             text-align: left;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .code-highlight::-webkit-scrollbar {
+            display: none;
         }
 
         .code-textarea {
@@ -290,7 +410,7 @@
             font-size: 18px;
             line-height: 1.6;
             color: transparent;
-            caret-color: white;
+            caret-color: #ffffff;
             background: transparent;
             border: none;
             resize: none;
@@ -299,9 +419,68 @@
             text-align: left;
             overflow-y: auto;
             z-index: 1;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+            autocomplete: off;
+            autocorrect: off;
+            autocapitalize: off;
+            spellcheck: false;
         }
 
-        /* مودال من غير إيموجي */
+        /* شريط تمرير أنيق للمحرر */
+        .code-textarea::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .code-textarea::-webkit-scrollbar-track {
+            background: #1e1e1e;
+            border-radius: 10px;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb {
+            background: #6c63ff;
+            border-radius: 10px;
+            border: 2px solid #1e1e1e;
+        }
+
+        .code-textarea::-webkit-scrollbar-thumb:hover {
+            background: #7b2ff7;
+        }
+
+        /* صندوق الإكمال التلقائي */
+        .autocomplete-box {
+            position: absolute;
+            z-index: 70;
+            background: #1e1e36;
+            border: 1px solid #6c63ff;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            min-width: 180px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+            display: none;
+            direction: ltr;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        .autocomplete-box.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            color: #ddd;
+            transition: background 0.15s;
+        }
+
+        .autocomplete-item:hover, .autocomplete-item.active {
+            background: #6c63ff;
+            color: white;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -392,7 +571,6 @@
             fill: none;
         }
 
-        /* معاينة */
         .preview-container {
             display: none;
             position: fixed;
@@ -414,29 +592,11 @@
             border: none;
         }
 
+        /* زر إغلاق المعاينة - مخفي بالكامل */
         .btn-close-preview {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 300;
-            background: #ff3333;
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            display: none;
+            display: none !important;
         }
 
-        .btn-close-preview.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ملف الإدخال */
         #hiddenFileInput {
             position: absolute;
             left: -9999px;
@@ -445,11 +605,10 @@
             opacity: 0;
         }
 
-        /* زر العودة للأعلى */
         .back-to-top {
             position: fixed;
             bottom: 30px;
-            left: 20px;            /* علي الشمال */
+            left: 20px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -485,7 +644,6 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- هيدر صغير -->
         <div class="header">
             <div class="right-section">
                 <button class="copy-btn" onclick="copyCurrentCode()" title="نسخ الكود">
@@ -495,18 +653,24 @@
                     <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="#00b894"/></svg>
                 </button>
             </div>
-
             <div class="logo">
                 <img src="https://e.top4top.io/p_3814i1i5z2.png" alt="CodeX Logo">
             </div>
-
             <div class="left-section">
                 <span class="current-file-name" id="currentFileNameDisplay">لا ملف</span>
                 <button class="menu-btn" onclick="toggleMenu()">☰</button>
             </div>
         </div>
 
-        <!-- القائمة -->
+        <!-- شريط الأخطاء -->
+        <div class="error-bar" id="errorBar">
+            <button class="error-icon" id="errorIconBtn" title="الأخطاء">
+                <span>⚠️</span>
+                <span class="error-count" id="errorCount">0</span>
+            </button>
+            <div class="error-panel" id="errorPanel"></div>
+        </div>
+
         <div class="dropdown-menu" id="dropdownMenu">
             <div class="menu-actions">
                 <button class="menu-action-btn" onclick="startNewFile()" title="ملف جديد">
@@ -522,22 +686,20 @@
             <div id="fileTreeContainer"></div>
         </div>
 
-        <!-- منطقة الكتابة (رمادي داكن + تمييز syntax) -->
         <div class="editor-area">
             <div class="line-numbers" id="lineNumbers"></div>
             <div class="code-editor-wrapper">
                 <pre class="code-highlight" id="codeHighlight"><code></code></pre>
                 <textarea class="code-textarea" id="codeEditor" placeholder="// اكتب كودك هنا..." disabled></textarea>
+                <div class="autocomplete-box" id="autocompleteBox"></div>
             </div>
         </div>
     </div>
 
-    <!-- زر العودة للأعلى -->
     <button id="backToTopBtn" class="back-to-top" title="العودة للأعلى">
         <svg viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
     </button>
 
-    <!-- مودال إنشاء (بدون إيموجي) -->
     <div class="modal" id="createModal">
         <div class="modal-box">
             <h3 id="modalTitle">
@@ -558,20 +720,18 @@
         </div>
     </div>
 
-    <!-- معاينة -->
     <div class="preview-container" id="previewContainer">
         <iframe id="previewFrame"></iframe>
     </div>
-    <button class="btn-close-preview" id="btnClosePreview" onclick="closePreview()">✕</button>
+    <!-- زر إغلاق المعاينة مخفي ولن يظهر -->
+    <button class="btn-close-preview" id="btnClosePreview" onclick="closePreview()" style="display:none;">✕</button>
 
-    <!-- ملف الإدخال للاستيراد -->
     <input type="file" id="hiddenFileInput" multiple 
-           accept=".html,.css,.js,.json,.txt,text/html,text/css,application/javascript,application/json"
+           accept=".html,.css,.js,.json,.txt,.php,text/html,text/css,application/javascript,application/json,text/plain,application/x-httpd-php"
            onchange="handleFileImport(event)">
 
     <script>
-        // ============ التخزين ============
-        const STORAGE_KEY = 'codex_editor_tree_v2';
+        const STORAGE_KEY = 'codex_editor_tree_v5';
 
         function saveTree() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(fileTree));
@@ -582,9 +742,14 @@
             return saved ? JSON.parse(saved) : [];
         }
 
-        // ============ هيكل الشجرة ============
         let fileTree = loadTree();
         let currentFileId = null;
+
+        const errorBar = document.getElementById('errorBar');
+        const errorIconBtn = document.getElementById('errorIconBtn');
+        const errorCountSpan = document.getElementById('errorCount');
+        const errorPanel = document.getElementById('errorPanel');
+        let allErrors = [];
 
         const currentFileNameDisplay = document.getElementById('currentFileNameDisplay');
         const dropdownMenu = document.getElementById('dropdownMenu');
@@ -600,11 +765,11 @@
         const previewFrame = document.getElementById('previewFrame');
         const btnClosePreview = document.getElementById('btnClosePreview');
         const backToTopBtn = document.getElementById('backToTopBtn');
+        const autocompleteBox = document.getElementById('autocompleteBox');
 
         let pendingAction = null;
         let pendingFolderId = null;
 
-        // ============ نظام debounce للتمييز لتجنب التهنيج ============
         let highlightTimeout;
         function debouncedHighlight() {
             clearTimeout(highlightTimeout);
@@ -613,16 +778,616 @@
             }, 250);
         }
 
-        // ============ تمييز الأكواد (Syntax Highlighting) مع دعم CSS/JS ============
+        // ============ الإكمال التلقائي الذكي ============
+        const autocompleteData = {
+            html: {
+                tags: [
+                    '!DOCTYPE', 'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio',
+                    'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button',
+                    'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist',
+                    'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed',
+                    'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'head', 'header', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd',
+                    'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'meta', 'meter',
+                    'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param',
+                    'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script',
+                    'section', 'select', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary',
+                    'sup', 'svg', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead',
+                    'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr'
+                ],
+                attributes: [
+                    'class', 'id', 'style', 'src', 'href', 'alt', 'title', 'type', 'name', 'value',
+                    'placeholder', 'disabled', 'readonly', 'required', 'checked', 'selected', 'width', 'height',
+                    'min', 'max', 'step', 'pattern', 'autocomplete', 'autofocus', 'multiple', 'target',
+                    'rel', 'media', 'sizes', 'srcset', 'usemap', 'ismap', 'coords', 'shape',
+                    'download', 'lang', 'dir', 'tabindex', 'accesskey', 'contenteditable', 'draggable',
+                    'hidden', 'spellcheck', 'translate', 'role', 'aria-*'
+                ]
+            },
+            css: {
+                properties: [
+                    'align-content', 'align-items', 'align-self', 'all', 'animation', 'animation-delay',
+                    'animation-direction', 'animation-duration', 'animation-fill-mode', 'animation-iteration-count',
+                    'animation-name', 'animation-play-state', 'animation-timing-function', 'backdrop-filter',
+                    'backface-visibility', 'background', 'background-attachment', 'background-blend-mode',
+                    'background-clip', 'background-color', 'background-image', 'background-origin',
+                    'background-position', 'background-repeat', 'background-size', 'border', 'border-bottom',
+                    'border-bottom-color', 'border-bottom-left-radius', 'border-bottom-right-radius',
+                    'border-bottom-style', 'border-bottom-width', 'border-collapse', 'border-color',
+                    'border-image', 'border-image-outset', 'border-image-repeat', 'border-image-slice',
+                    'border-image-source', 'border-image-width', 'border-left', 'border-left-color',
+                    'border-left-style', 'border-left-width', 'border-radius', 'border-right', 'border-right-color',
+                    'border-right-style', 'border-right-width', 'border-spacing', 'border-style', 'border-top',
+                    'border-top-color', 'border-top-left-radius', 'border-top-right-radius', 'border-top-style',
+                    'border-top-width', 'border-width', 'bottom', 'box-shadow', 'box-sizing', 'break-after',
+                    'break-before', 'break-inside', 'caption-side', 'caret-color', 'clear', 'clip', 'clip-path',
+                    'color', 'column-count', 'column-fill', 'column-gap', 'column-rule', 'column-rule-color',
+                    'column-rule-style', 'column-rule-width', 'column-span', 'column-width', 'columns', 'content',
+                    'counter-increment', 'counter-reset', 'cursor', 'direction', 'display', 'empty-cells',
+                    'filter', 'flex', 'flex-basis', 'flex-direction', 'flex-flow', 'flex-grow', 'flex-shrink',
+                    'flex-wrap', 'float', 'font', 'font-family', 'font-feature-settings', 'font-kerning',
+                    'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant',
+                    'font-variant-caps', 'font-weight', 'gap', 'grid', 'grid-area', 'grid-auto-columns',
+                    'grid-auto-flow', 'grid-auto-rows', 'grid-column', 'grid-column-end', 'grid-column-gap',
+                    'grid-column-start', 'grid-gap', 'grid-row', 'grid-row-end', 'grid-row-gap', 'grid-row-start',
+                    'grid-template', 'grid-template-areas', 'grid-template-columns', 'grid-template-rows',
+                    'height', 'hyphens', 'image-rendering', 'isolation', 'justify-content', 'justify-items',
+                    'justify-self', 'left', 'letter-spacing', 'line-height', 'list-style', 'list-style-image',
+                    'list-style-position', 'list-style-type', 'margin', 'margin-bottom', 'margin-left',
+                    'margin-right', 'margin-top', 'mask', 'mask-border', 'mask-border-mode', 'mask-border-outset',
+                    'mask-border-repeat', 'mask-border-slice', 'mask-border-source', 'mask-border-width',
+                    'mask-clip', 'mask-composite', 'mask-image', 'mask-mode', 'mask-origin', 'mask-position',
+                    'mask-repeat', 'mask-size', 'mask-type', 'max-height', 'max-width', 'min-height', 'min-width',
+                    'mix-blend-mode', 'object-fit', 'object-position', 'opacity', 'order', 'outline',
+                    'outline-color', 'outline-offset', 'outline-style', 'outline-width', 'overflow',
+                    'overflow-wrap', 'overflow-x', 'overflow-y', 'padding', 'padding-bottom', 'padding-left',
+                    'padding-right', 'padding-top', 'page-break-after', 'page-break-before', 'page-break-inside',
+                    'perspective', 'perspective-origin', 'pointer-events', 'position', 'quotes', 'resize',
+                    'right', 'row-gap', 'scroll-behavior', 'scroll-margin', 'scroll-margin-block',
+                    'scroll-margin-block-end', 'scroll-margin-block-start', 'scroll-margin-bottom',
+                    'scroll-margin-inline', 'scroll-margin-inline-end', 'scroll-margin-inline-start',
+                    'scroll-margin-left', 'scroll-margin-right', 'scroll-margin-top', 'scroll-padding',
+                    'scroll-padding-block', 'scroll-padding-block-end', 'scroll-padding-block-start',
+                    'scroll-padding-bottom', 'scroll-padding-inline', 'scroll-padding-inline-end',
+                    'scroll-padding-inline-start', 'scroll-padding-left', 'scroll-padding-right',
+                    'scroll-padding-top', 'scroll-snap-align', 'scroll-snap-stop', 'scroll-snap-type',
+                    'shape-image-threshold', 'shape-margin', 'shape-outside', 'tab-size', 'table-layout',
+                    'text-align', 'text-align-last', 'text-combine-upright', 'text-decoration',
+                    'text-decoration-color', 'text-decoration-line', 'text-decoration-style', 'text-decoration-thickness',
+                    'text-emphasis', 'text-emphasis-color', 'text-emphasis-position', 'text-emphasis-style',
+                    'text-indent', 'text-justify', 'text-orientation', 'text-overflow', 'text-shadow',
+                    'text-transform', 'text-underline-position', 'top', 'transform', 'transform-box',
+                    'transform-origin', 'transform-style', 'transition', 'transition-delay', 'transition-duration',
+                    'transition-property', 'transition-timing-function', 'unicode-bidi', 'user-select',
+                    'vertical-align', 'visibility', 'white-space', 'width', 'will-change', 'word-break',
+                    'word-spacing', 'word-wrap', 'writing-mode', 'z-index', 'zoom'
+                ],
+                values: {
+                    'position': ['static', 'relative', 'absolute', 'fixed', 'sticky'],
+                    'display': ['none', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'inline-grid', 'table', 'table-cell', 'table-row', 'list-item'],
+                    'overflow': ['visible', 'hidden', 'scroll', 'auto'],
+                    'float': ['none', 'left', 'right'],
+                    'text-align': ['left', 'right', 'center', 'justify'],
+                    'cursor': ['auto', 'default', 'pointer', 'crosshair', 'move', 'text', 'wait', 'help', 'not-allowed', 'grab', 'grabbing'],
+                    'font-weight': ['normal', 'bold', 'lighter', 'bolder', '100', '200', '300', '400', '500', '600', '700', '800', '900'],
+                    'visibility': ['visible', 'hidden', 'collapse'],
+                    'border-style': ['none', 'solid', 'dotted', 'dashed', 'double', 'groove', 'ridge', 'inset', 'outset'],
+                    'text-transform': ['none', 'capitalize', 'uppercase', 'lowercase'],
+                    'white-space': ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line', 'break-spaces'],
+                    'flex-direction': ['row', 'row-reverse', 'column', 'column-reverse'],
+                    'justify-content': ['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'],
+                    'align-items': ['flex-start', 'flex-end', 'center', 'baseline', 'stretch'],
+                    'flex-wrap': ['nowrap', 'wrap', 'wrap-reverse'],
+                    'background-repeat': ['repeat', 'repeat-x', 'repeat-y', 'no-repeat'],
+                    'background-size': ['auto', 'cover', 'contain'],
+                    'background-position': ['top', 'bottom', 'left', 'right', 'center'],
+                    'list-style-type': ['none', 'disc', 'circle', 'square', 'decimal', 'lower-alpha', 'upper-alpha', 'lower-roman', 'upper-roman'],
+                    'object-fit': ['fill', 'contain', 'cover', 'none', 'scale-down'],
+                    'box-sizing': ['content-box', 'border-box'],
+                    'resize': ['none', 'both', 'horizontal', 'vertical'],
+                    'text-overflow': ['clip', 'ellipsis'],
+                    'overflow-wrap': ['normal', 'break-word', 'anywhere'],
+                    'word-break': ['normal', 'break-all', 'keep-all'],
+                    'direction': ['ltr', 'rtl']
+                }
+            },
+            js: {
+                keywords: ['break', 'case', 'catch', 'continue', 'debugger', 'default', 'delete', 'do', 'else',
+                           'finally', 'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch',
+                           'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'let', 'const',
+                           'class', 'export', 'import', 'extends', 'super', 'yield', 'async', 'await', 'of'],
+                builtins: ['Array', 'Boolean', 'Date', 'Error', 'Function', 'JSON', 'Math', 'Number', 'Object',
+                          'RegExp', 'String', 'Symbol', 'Map', 'Set', 'WeakMap', 'WeakSet', 'Promise',
+                          'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array',
+                          'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array', 'BigInt64Array', 'BigUint64Array'],
+                functions: ['eval', 'isFinite', 'isNaN', 'parseFloat', 'parseInt', 'decodeURI', 'decodeURIComponent',
+                           'encodeURI', 'encodeURIComponent', 'escape', 'unescape', 'alert', 'confirm', 'prompt',
+                           'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'requestAnimationFrame',
+                           'cancelAnimationFrame'],
+                dom: ['document', 'window', 'navigator', 'location', 'history', 'localStorage', 'sessionStorage',
+                      'console', 'fetch', 'addEventListener', 'removeEventListener', 'querySelector', 'querySelectorAll',
+                      'getElementById', 'getElementsByClassName', 'getElementsByTagName', 'createElement', 'createTextNode',
+                      'appendChild', 'removeChild', 'replaceChild', 'insertBefore', 'classList', 'innerHTML', 'textContent',
+                      'style', 'setAttribute', 'getAttribute', 'removeAttribute'],
+                objectProps: {
+                    'document': ['getElementById', 'querySelector', 'querySelectorAll', 'createElement', 'body', 'head', 'title', 'cookie', 'location', 'write'],
+                    'window': ['alert', 'confirm', 'prompt', 'open', 'close', 'setTimeout', 'setInterval', 'scrollTo', 'location'],
+                    'Math': ['abs', 'ceil', 'floor', 'round', 'max', 'min', 'random', 'sqrt', 'pow', 'sin', 'cos', 'tan', 'PI'],
+                    'console': ['log', 'warn', 'error', 'info', 'debug', 'table', 'trace'],
+                    'Array': ['from', 'isArray', 'of'],
+                    'Array.prototype': ['push', 'pop', 'shift', 'unshift', 'forEach', 'map', 'filter', 'reduce', 'find', 'indexOf', 'slice', 'splice', 'concat', 'join', 'reverse', 'sort'],
+                    'String': ['fromCharCode', 'fromCodePoint'],
+                    'String.prototype': ['charAt', 'charCodeAt', 'concat', 'includes', 'indexOf', 'lastIndexOf', 'match', 'replace', 'slice', 'split', 'substring', 'toLowerCase', 'toUpperCase', 'trim', 'trimStart', 'trimEnd', 'startsWith', 'endsWith', 'repeat'],
+                    'JSON': ['parse', 'stringify'],
+                    'Object': ['assign', 'create', 'defineProperty', 'entries', 'keys', 'values', 'freeze', 'seal'],
+                    'Promise': ['all', 'race', 'resolve', 'reject'],
+                    'localStorage': ['getItem', 'setItem', 'removeItem', 'clear'],
+                    'sessionStorage': ['getItem', 'setItem', 'removeItem', 'clear']
+                }
+            },
+            php: {
+                functions: [
+                    'echo', 'print', 'isset', 'empty', 'unset', 'die', 'exit', 'include', 'require', 'include_once', 'require_once',
+                    'array', 'array_merge', 'array_push', 'array_pop', 'array_shift', 'array_unshift', 'array_keys', 'array_values',
+                    'count', 'in_array', 'explode', 'implode', 'join', 'strlen', 'strpos', 'str_replace', 'substr', 'trim', 'ltrim', 'rtrim',
+                    'strtolower', 'strtoupper', 'ucfirst', 'ucwords', 'htmlspecialchars', 'htmlentities', 'strip_tags',
+                    'date', 'time', 'mktime', 'strtotime', 'header', 'setcookie', 'session_start', 'session_destroy',
+                    'mysqli_connect', 'mysqli_query', 'mysqli_fetch_assoc', 'PDO', 'file_get_contents', 'file_put_contents',
+                    'fopen', 'fclose', 'fread', 'fwrite', 'json_encode', 'json_decode', 'mail', 'intval', 'floatval', 'doubleval',
+                    'is_numeric', 'is_int', 'is_string', 'is_array', 'is_object', 'class_exists', 'method_exists', 'property_exists',
+                    'get_class', 'gettype', 'var_dump', 'print_r', 'error_reporting', 'ini_set', 'ini_get', 'define', 'defined',
+                    'function_exists', 'array_key_exists', 'array_search', 'array_filter', 'array_map', 'array_reduce',
+                    'preg_match', 'preg_replace', 'sprintf', 'printf', 'round', 'ceil', 'floor', 'abs', 'sqrt', 'pow',
+                    'rand', 'mt_rand', 'shuffle', 'sort', 'rsort', 'asort', 'ksort', 'array_unique', 'array_reverse',
+                    'extract', 'compact', 'list', 'range', 'str_repeat', 'str_pad', 'chunk_split', 'wordwrap',
+                    'basename', 'dirname', 'pathinfo', 'realpath', 'is_dir', 'is_file', 'file_exists', 'unlink',
+                    'rename', 'copy', 'mkdir', 'rmdir', 'scandir', 'glob'
+                ],
+                keywords: ['if', 'else', 'elseif', 'while', 'do', 'for', 'foreach', 'switch', 'case', 'break', 'continue', 'return',
+                          'function', 'class', 'interface', 'trait', 'namespace', 'use', 'extends', 'implements', 'abstract',
+                          'final', 'public', 'private', 'protected', 'static', 'const', 'new', 'clone', 'throw', 'try', 'catch',
+                          'finally', 'global', 'as', 'yield', 'list', 'echo', 'print', 'include', 'require', 'require_once',
+                          'include_once', 'instanceof', 'insteadof', 'match', 'enum', 'readonly', 'never'],
+                superglobals: ['$_GET', '$_POST', '$_REQUEST', '$_SERVER', '$_SESSION', '$_COOKIE', '$_FILES', '$_ENV', '$GLOBALS']
+            }
+        };
+
+        // الحصول على قائمة الإكمال حسب نوع الملف
+        function getCompletionsForFile(fileName) {
+            const ext = fileName ? fileName.split('.').pop().toLowerCase() : '';
+            switch (ext) {
+                case 'html': return { type: 'html', ...autocompleteData.html };
+                case 'css': return { type: 'css', ...autocompleteData.css };
+                case 'js': return { type: 'js', ...autocompleteData.js };
+                case 'php': return { type: 'php', ...autocompleteData.php };
+                default: return null;
+            }
+        }
+
+        // استخراج الرمز الحالي قبل المؤشر
+        function getCurrentToken(text, cursorPos) {
+            if (cursorPos <= 0) return '';
+            const start = text.lastIndexOf(' ', cursorPos - 1) + 1;
+            const dotIdx = text.lastIndexOf('.', cursorPos - 1);
+            const tokenStart = Math.max(start, dotIdx + 1);
+            return text.substring(tokenStart, cursorPos);
+        }
+
+        // تحديد السياق (خاص بـ CSS: هل نحن في قيمة خاصية معينة؟)
+        function getContextInfo(text, cursorPos, lang) {
+            if (lang === 'css') {
+                const lineStart = text.lastIndexOf('\n', cursorPos - 1) + 1;
+                const line = text.substring(lineStart, cursorPos);
+                const match = line.match(/^\s*([a-zA-Z-]+)\s*:\s*(.*)/);
+                if (match) {
+                    return { property: match[1], valueToken: match[2].trim() };
+                }
+                // قبل النقطتين: ربما تكتب قيمة بعد اسم الخاصية بدون نقطتين
+                const beforeCursor = text.substring(0, cursorPos).trim();
+                const words = beforeCursor.split(/\s+/);
+                if (words.length >= 1) {
+                    const lastWord = words[words.length-1];
+                    if (autocompleteData.css.properties.includes(lastWord)) {
+                        return { property: lastWord, valueToken: '' };
+                    }
+                }
+            }
+            return null;
+        }
+
+        // ترشيح الاقتراحات
+        function filterCompletions(completions, token, context) {
+            if (!token && !context) return [];
+            const lowerToken = token.toLowerCase();
+            let results = [];
+
+            if (completions.type === 'html') {
+                // وسوم وسمات
+                const all = [...completions.tags, ...completions.attributes];
+                results = all.filter(item => item.toLowerCase().startsWith(lowerToken));
+            } else if (completions.type === 'css') {
+                if (context && context.property) {
+                    const propValues = completions.values[context.property];
+                    if (propValues) {
+                        results = propValues.filter(v => v.toLowerCase().startsWith(lowerToken));
+                        if (results.length === 0) results = propValues; // إظهار كل القيم إذا لم يطابق شيء
+                    }
+                }
+                if (results.length === 0) {
+                    results = completions.properties.filter(p => p.toLowerCase().startsWith(lowerToken));
+                }
+            } else if (completions.type === 'js') {
+                // دمج كل القوائم ثم تحقق من dot notation
+                let candidates = [...completions.keywords, ...completions.builtins, ...completions.functions, ...completions.dom];
+                if (token.includes('.')) {
+                    const parts = token.split('.');
+                    const obj = parts[0];
+                    const prop = parts[1] || '';
+                    const objProps = completions.objectProps[obj] || completions.objectProps[obj+'.prototype'];
+                    if (objProps) {
+                        candidates = objProps;
+                    }
+                    results = candidates.filter(c => c.toLowerCase().startsWith(prop.toLowerCase()));
+                } else {
+                    results = candidates.filter(c => c.toLowerCase().startsWith(lowerToken));
+                }
+            } else if (completions.type === 'php') {
+                const all = [...completions.functions, ...completions.keywords, ...completions.superglobals];
+                results = all.filter(item => item.toLowerCase().startsWith(lowerToken));
+            }
+
+            return results.slice(0, 30); // حد أقصى للاقتراحات
+        }
+
+        // عرض صندوق الإكمال
+        function showAutocomplete(suggestions) {
+            if (!suggestions.length) {
+                hideAutocomplete();
+                return;
+            }
+            autocompleteBox.innerHTML = '';
+            suggestions.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = item;
+                div.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    insertCompletion(item);
+                });
+                if (index === 0) div.classList.add('active');
+                autocompleteBox.appendChild(div);
+            });
+
+            // حساب موضع المؤشر
+            const caretPos = getCaretCoordinates(codeEditor, codeEditor.selectionStart);
+            if (caretPos) {
+                autocompleteBox.style.left = Math.min(caretPos.left, codeEditor.clientWidth - 200) + 'px';
+                autocompleteBox.style.top = Math.min(caretPos.top + 20, codeEditor.clientHeight - 150) + 'px';
+            }
+            autocompleteBox.classList.add('show');
+        }
+
+        function hideAutocomplete() {
+            autocompleteBox.classList.remove('show');
+        }
+
+        // دالة مساعدة لحساب إحداثيات المؤشر في textarea
+        function getCaretCoordinates(textarea, position) {
+            const div = document.createElement('div');
+            const style = getComputedStyle(textarea);
+            for (let prop of style) {
+                try { div.style[prop] = style[prop]; } catch(e) {}
+            }
+            div.style.position = 'absolute';
+            div.style.visibility = 'hidden';
+            div.style.whiteSpace = 'pre-wrap';
+            div.style.wordWrap = 'break-word';
+            div.style.width = textarea.clientWidth + 'px';
+            div.style.height = 'auto';
+            div.style.overflow = 'hidden';
+            const textBefore = textarea.value.substring(0, position);
+            const textAfter = textarea.value.substring(position);
+            div.textContent = textBefore + '|';
+            document.body.appendChild(div);
+            const span = document.createElement('span');
+            span.textContent = textAfter.substring(0, 50) || '.';
+            div.appendChild(span);
+            const coordinates = {
+                top: span.offsetTop - textarea.scrollTop,
+                left: span.offsetLeft - textarea.scrollLeft
+            };
+            document.body.removeChild(div);
+            return coordinates;
+        }
+
+        // إدخال الاقتراح المختار
+        function insertCompletion(text) {
+            const cursorPos = codeEditor.selectionStart;
+            const currentToken = getCurrentToken(codeEditor.value, cursorPos);
+            const tokenStart = cursorPos - currentToken.length;
+            codeEditor.setRangeText(text, tokenStart, cursorPos, 'end');
+            codeEditor.focus();
+            hideAutocomplete();
+            updateLineNumbers();
+            debouncedHighlight();
+            saveCurrentFileContentSoon();
+        }
+
+        // أحداث لوحة المفاتيح للتنقل في الاقتراحات
+        let activeIndex = 0;
+        codeEditor.addEventListener('keydown', function(e) {
+            if (!autocompleteBox.classList.contains('show')) return;
+            const items = autocompleteBox.querySelectorAll('.autocomplete-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                activeIndex = Math.min(activeIndex + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(activeIndex - 1, 0);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault();
+                if (items[activeIndex]) {
+                    insertCompletion(items[activeIndex].textContent);
+                }
+            } else if (e.key === 'Escape') {
+                hideAutocomplete();
+            }
+        });
+
+        function updateActiveItem(items) {
+            items.forEach((item, i) => item.classList.toggle('active', i === activeIndex));
+            const active = items[activeIndex];
+            if (active) active.scrollIntoView({ block: 'nearest' });
+        }
+
+        // حدث الكتابة لإظهار الإكمال
+        codeEditor.addEventListener('input', () => {
+            updateLineNumbers();
+            debouncedHighlight();
+            clearTimeout(window.lintTimeout);
+            window.lintTimeout = setTimeout(() => {
+                if (currentFileId) {
+                    const node = findNodeById(fileTree, currentFileId);
+                    if (node) {
+                        node.content = codeEditor.value;
+                        updateAllErrors();
+                    }
+                }
+            }, 800);
+
+            // الإكمال التلقائي
+            const fileName = currentFileId ? findNodeById(fileTree, currentFileId)?.name : '';
+            const langData = getCompletionsForFile(fileName);
+            if (!langData) { hideAutocomplete(); return; }
+            const cursorPos = codeEditor.selectionStart;
+            const token = getCurrentToken(codeEditor.value, cursorPos);
+            if (token.length < 1) { hideAutocomplete(); return; }
+            const context = (langData.type === 'css') ? getContextInfo(codeEditor.value, cursorPos, 'css') : null;
+            const suggestions = filterCompletions(langData, token, context);
+            if (suggestions.length) {
+                activeIndex = 0;
+                showAutocomplete(suggestions);
+            } else {
+                hideAutocomplete();
+            }
+        });
+
+        // إخفاء الإكمال عند النقر خارج المحرر
+        document.addEventListener('click', (e) => {
+            if (!autocompleteBox.contains(e.target) && e.target !== codeEditor) {
+                hideAutocomplete();
+            }
+        });
+
+        // ============ أنظمة فحص الأخطاء المتطورة ============
+        function removeCommentsAndStrings(code, type) {
+            if (type === 'html') {
+                return code.replace(/<!--[\s\S]*?-->/g, '').replace(/"[^"]*"/g, '""').replace(/'[^']*'/g, "''");
+            } else if (type === 'css') {
+                return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/"[^"]*"/g, '""').replace(/'[^']*'/g, "''");
+            } else if (type === 'js' || type === 'php') {
+                return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*/g, '').replace(/"[^"]*"/g, '""').replace(/'[^']*'/g, "''").replace(/`[^`]*`/g, '``');
+            }
+            return code;
+        }
+
+        function lintHTML(code) {
+            const errors = [];
+            const cleanCode = removeCommentsAndStrings(code, 'html');
+            const lines = code.split('\n');
+            const voidElements = ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'];
+            
+            lines.forEach((line, idx) => {
+                const stripped = line.replace(/"[^"]*"/g, '').replace(/'[^']*'/g, '');
+                const doubleQuotes = (stripped.match(/"/g) || []).length;
+                const singleQuotes = (stripped.match(/'/g) || []).length;
+                if (doubleQuotes % 2 !== 0) errors.push({ line: idx + 1, message: 'علامة تنصيص مزدوجة غير مغلقة' });
+                if (singleQuotes % 2 !== 0) errors.push({ line: idx + 1, message: 'علامة تنصيص فردية غير مغلقة' });
+            });
+
+            const tagStack = [];
+            const regex = /<\/?([a-zA-Z0-9]+)[^>]*>/g;
+            let match;
+            while ((match = regex.exec(cleanCode)) !== null) {
+                const isClosing = match[0].startsWith('</');
+                const tag = match[1].toLowerCase();
+                if (voidElements.includes(tag)) continue;
+                if (!isClosing) {
+                    tagStack.push({ tag, line: code.substring(0, match.index).split('\n').length });
+                } else {
+                    if (tagStack.length === 0) {
+                        errors.push({ line: code.substring(0, match.index).split('\n').length, message: `وسم إغلاق </${tag}> غير متوقع` });
+                    } else if (tagStack[tagStack.length-1].tag !== tag) {
+                        errors.push({ line: code.substring(0, match.index).split('\n').length, message: `وسم إغلاق </${tag}> لا يطابق <${tagStack[tagStack.length-1].tag}>` });
+                        tagStack.pop();
+                    } else {
+                        tagStack.pop();
+                    }
+                }
+            }
+            tagStack.forEach(item => errors.push({ line: item.line, message: `الوسم <${item.tag}> غير مغلق` }));
+
+            return errors;
+        }
+
+        function lintCSS(code) {
+            const errors = [];
+            const cleanCode = removeCommentsAndStrings(code, 'css');
+            let braceCount = 0;
+            const lines = code.split('\n');
+            lines.forEach((line, idx) => {
+                braceCount += (line.match(/\{/g) || []).length;
+                braceCount -= (line.match(/\}/g) || []).length;
+                if (braceCount < 0) {
+                    errors.push({ line: idx + 1, message: 'قوس } زائد' });
+                    braceCount = 0;
+                }
+            });
+            if (braceCount > 0) errors.push({ line: lines.length, message: 'أقواس { غير مغلقة' });
+            return errors;
+        }
+
+        function lintJS(code) {
+            try {
+                new Function(code);
+                return [];
+            } catch (e) {
+                const lineMatch = e.stack.match(/at new Function \(.*?:(\d+):/);
+                const line = lineMatch ? parseInt(lineMatch[1]) - 1 : 0;
+                let message = e.message;
+                if (message.includes('is not defined') || message.includes('Unexpected end')) {
+                    return [];
+                }
+                return [{ line: line || 1, message: message }];
+            }
+        }
+
+        function lintPHP(code) {
+            const errors = [];
+            const phpBlocks = /<\?php([\s\S]*?)\?>/g;
+            let match;
+            while ((match = phpBlocks.exec(code)) !== null) {
+                const phpCode = match[1];
+                const baseLine = code.substring(0, match.index).split('\n').length;
+                const cleanPHP = removeCommentsAndStrings(phpCode, 'php');
+                
+                let parenCount = 0, braceCount = 0;
+                const lines = cleanPHP.split('\n');
+                lines.forEach((line, idx) => {
+                    parenCount += (line.match(/\(/g) || []).length;
+                    parenCount -= (line.match(/\)/g) || []).length;
+                    braceCount += (line.match(/\{/g) || []).length;
+                    braceCount -= (line.match(/\}/g) || []).length;
+                    if (parenCount < 0) {
+                        errors.push({ line: baseLine + idx + 1, message: 'قوس ) زائد' });
+                        parenCount = 0;
+                    }
+                    if (braceCount < 0) {
+                        errors.push({ line: baseLine + idx + 1, message: 'قوس } زائد' });
+                        braceCount = 0;
+                    }
+                });
+                if (parenCount > 0) errors.push({ line: baseLine + lines.length, message: 'أقواس ( غير مغلقة' });
+                if (braceCount > 0) errors.push({ line: baseLine + lines.length, message: 'أقواس { غير مغلقة' });
+
+                const phpLines = phpCode.split('\n');
+                phpLines.forEach((line, idx) => {
+                    const trimmed = line.trim();
+                    if (trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#') && !trimmed.endsWith('{') && !trimmed.endsWith('}') && !trimmed.endsWith(';') && !trimmed.endsWith(':') && !trimmed.startsWith('<?php') && !trimmed.startsWith('?>')) {
+                        if (!/^\s*(\/\/|#|\*)/.test(trimmed) && !/^\s*function\s+/.test(trimmed) && !/^\s*class\s+/.test(trimmed) && !/^\s*if\s+/.test(trimmed) && !/^\s*else/.test(trimmed) && !/^\s*for\s+/.test(trimmed) && !/^\s*while\s+/.test(trimmed)) {
+                            errors.push({ line: baseLine + idx + 1, message: 'ربما تنسى فاصلة منقوطة ;' });
+                        }
+                    }
+                });
+            }
+            return errors;
+        }
+
+        function lintFile(node) {
+            if (!node || !node.content) return [];
+            const ext = node.name.split('.').pop().toLowerCase();
+            if (ext === 'html') return lintHTML(node.content);
+            if (ext === 'css') return lintCSS(node.content);
+            if (ext === 'js') return lintJS(node.content);
+            if (ext === 'php') return lintPHP(node.content);
+            return [];
+        }
+
+        function updateAllErrors() {
+            const newErrors = [];
+            function scan(nodes) {
+                nodes.forEach(node => {
+                    if (node.type === 'file') {
+                        const errs = lintFile(node);
+                        errs.forEach(e => newErrors.push({ fileId: node.id, fileName: node.name, line: e.line, message: e.message }));
+                    }
+                    if (node.children) scan(node.children);
+                });
+            }
+            scan(fileTree);
+            allErrors = newErrors;
+            errorCountSpan.textContent = allErrors.length;
+            errorIconBtn.style.display = allErrors.length > 0 ? 'flex' : 'none';
+            renderErrorPanel();
+            updateLineNumbers();
+        }
+
+        function renderErrorPanel() {
+            errorPanel.innerHTML = '';
+            if (allErrors.length === 0) {
+                errorPanel.innerHTML = '<div style="padding:8px;color:#aaa;">✅ لا توجد أخطاء</div>';
+                return;
+            }
+            allErrors.forEach(err => {
+                const item = document.createElement('div');
+                item.className = 'error-item';
+                item.innerHTML = `
+                    <span class="error-file">${err.fileName}</span>
+                    <span class="error-line">سطر ${err.line}</span>
+                    <span class="error-message">${err.message}</span>
+                `;
+                item.addEventListener('click', () => {
+                    goToError(err.fileId, err.line);
+                    errorPanel.classList.remove('show');
+                });
+                errorPanel.appendChild(item);
+            });
+        }
+
+        function goToError(fileId, line) {
+            const node = findNodeById(fileTree, fileId);
+            if (!node) return;
+            selectFile(node);
+            const lines = codeEditor.value.split('\n');
+            let charCount = 0;
+            for (let i = 0; i < line - 1; i++) {
+                charCount += (lines[i]?.length || 0) + 1;
+            }
+            codeEditor.focus();
+            codeEditor.setSelectionRange(charCount, charCount);
+            const lineHeight = 1.6 * 18;
+            codeEditor.scrollTop = Math.max(0, (line - 1) * lineHeight - 100);
+            codeHighlight.scrollTop = codeEditor.scrollTop;
+            lineNumbers.scrollTop = codeEditor.scrollTop;
+        }
+
+        errorIconBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            errorPanel.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+            errorPanel.classList.remove('show');
+        });
+
+        // ============ تمييز الأكواد ============
         function highlightCode(code) {
             if (!code) return '';
-            const blocks = [];
-            let remaining = code;
             const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
             const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/gi;
-            let lastIndex = 0;
             let match;
-
             const positions = [];
             while ((match = styleRegex.exec(code)) !== null) {
                 positions.push({ start: match.index, end: match.index + match[0].length, type: 'style', content: match[1] });
@@ -746,87 +1511,79 @@
             return result;
         }
 
-        function highlightCSSTag(tag) {
-            return colorizeTag(tag);
-        }
-
-        function highlightScriptTag(tag) {
-            return colorizeTag(tag);
-        }
+        function highlightCSSTag(tag) { return colorizeTag(tag); }
+        function highlightScriptTag(tag) { return colorizeTag(tag); }
 
         function escapeHtml(text) {
             return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
         function updateHighlight() {
-            const code = codeEditor.value;
-            codeHighlight.querySelector('code').innerHTML = highlightCode(code);
+            codeHighlight.querySelector('code').innerHTML = highlightCode(codeEditor.value);
             syncScroll();
         }
 
+        let scrollAnimationId;
         function syncScroll() {
-            codeHighlight.scrollTop = codeEditor.scrollTop;
-            codeHighlight.scrollLeft = codeEditor.scrollLeft;
+            if (scrollAnimationId) cancelAnimationFrame(scrollAnimationId);
+            scrollAnimationId = requestAnimationFrame(() => {
+                codeHighlight.scrollTop = codeEditor.scrollTop;
+                codeHighlight.scrollLeft = codeEditor.scrollLeft;
+            });
         }
 
-        // ============ مزامنة أرقام الأسطر (خفيفة جداً) ============
         function updateLineNumbers() {
             const lines = codeEditor.value.split('\n').length;
+            const currentErrors = allErrors.filter(e => e.fileId === currentFileId);
             let html = '';
             for (let i = 1; i <= lines; i++) {
-                html += i + '\n';
+                const hasError = currentErrors.some(e => e.line === i);
+                html += `<span class="line-num${hasError ? ' has-error' : ''}">${i}</span>`;
             }
-            lineNumbers.textContent = html || '1\n';
+            lineNumbers.innerHTML = html || '<span class="line-num">1</span>';
             lineNumbers.scrollTop = codeEditor.scrollTop;
         }
 
-        // ============ التحكم في زر العودة للأعلى ============
         function toggleBackToTop() {
-            if (codeEditor.scrollTop > 400) {
-                backToTopBtn.classList.add('show');
-            } else {
-                backToTopBtn.classList.remove('show');
-            }
+            if (codeEditor.scrollTop > 400) backToTopBtn.classList.add('show');
+            else backToTopBtn.classList.remove('show');
         }
 
-        // الأحداث - مع debounce للتمييز
-        codeEditor.addEventListener('input', () => {
-            updateLineNumbers();
-            debouncedHighlight();
-        });
-
-        // معالجة اللصق: تحديث فوري للأرقام + تمييز سريع
         codeEditor.addEventListener('paste', () => {
             setTimeout(() => {
                 updateLineNumbers();
                 clearTimeout(highlightTimeout);
                 updateHighlight();
+                if (currentFileId) {
+                    const node = findNodeById(fileTree, currentFileId);
+                    if (node) node.content = codeEditor.value;
+                    updateAllErrors();
+                }
             }, 10);
         });
 
         codeEditor.addEventListener('scroll', () => {
             lineNumbers.scrollTop = codeEditor.scrollTop;
             syncScroll();
-            toggleBackToTop();   // إظهار/إخفاء زر العودة للأعلى
+            toggleBackToTop();
+        });
+
+        lineNumbers.addEventListener('scroll', () => {
+            codeEditor.scrollTop = lineNumbers.scrollTop;
+            syncScroll();
         });
 
         backToTopBtn.addEventListener('click', () => {
             codeEditor.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // ============ القائمة ============
         function toggleMenu() {
             dropdownMenu.classList.toggle('show');
-            if (dropdownMenu.classList.contains('show')) {
-                renderFileTree();
-            }
+            if (dropdownMenu.classList.contains('show')) renderFileTree();
         }
 
-        function closeMenu() {
-            dropdownMenu.classList.remove('show');
-        }
+        function closeMenu() { dropdownMenu.classList.remove('show'); }
 
-        // ============ رسم الشجرة مع الثلاث نقاط والحذف ============
         function renderFileTree() {
             fileTreeContainer.innerHTML = '';
             renderNodes(fileTree, fileTreeContainer, 0);
@@ -843,8 +1600,8 @@
                         <span>${icon}</span>
                         <span class="item-name">${node.name}</span>
                         <button class="three-dots" data-id="${node.id}">⋮</button>
-                        <button class="delete-action" data-id="${node.id}">🗑 حذف</button>
-                    `;
+                        <button class="rename-action" data-id="${node.id}">✏️ تعديل</button>
+                        <button class="delete-action" data-id="${node.id}">🗑 حذف</button>`;
                     
                     item.querySelector('.item-name').addEventListener('click', () => {
                         selectFile(node);
@@ -852,17 +1609,32 @@
                     });
 
                     const dotsBtn = item.querySelector('.three-dots');
+                    const renameBtn = item.querySelector('.rename-action');
                     const delBtn = item.querySelector('.delete-action');
+                    
                     dotsBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        renameBtn.classList.toggle('show');
                         delBtn.classList.toggle('show');
+                    });
+
+                    renameBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const newName = prompt('أدخل الاسم الجديد:', node.name);
+                        if (newName && newName.trim() !== '' && newName !== node.name) {
+                            node.name = newName.trim();
+                            saveTree();
+                            if (currentFileId === node.id) {
+                                currentFileNameDisplay.textContent = node.name;
+                            }
+                            renderFileTree();
+                            updateAllErrors();
+                        }
                     });
 
                     delBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        if (confirm(`حذف الملف "${node.name}"؟`)) {
-                            deleteNodeById(node.id);
-                        }
+                        deleteNodeById(node.id);
                     });
 
                     container.appendChild(item);
@@ -875,38 +1647,29 @@
                         <span class="item-name">${node.name}</span>
                         <button class="three-dots" data-id="${node.id}">⋮</button>
                         <button class="delete-action" data-id="${node.id}">🗑 حذف</button>
-                        <button class="add-to-folder-btn" title="إضافة ملفات">+</button>
-                    `;
-
+                        <button class="add-to-folder-btn" title="إضافة ملفات">+</button>`;
                     const childrenContainer = document.createElement('div');
                     childrenContainer.className = 'folder-children';
                     childrenContainer.style.display = 'none';
-
                     const dotsBtn = folderDiv.querySelector('.three-dots');
                     const delBtn = folderDiv.querySelector('.delete-action');
                     dotsBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         delBtn.classList.toggle('show');
                     });
-
                     delBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        if (confirm(`حذف المجلد "${node.name}" وجميع محتوياته؟`)) {
-                            deleteNodeById(node.id);
-                        }
+                        deleteNodeById(node.id);
                     });
-
                     folderDiv.querySelector('.item-name').addEventListener('click', () => {
                         childrenContainer.style.display = childrenContainer.style.display === 'none' ? 'block' : 'none';
                         folderDiv.classList.toggle('open');
                     });
-
                     folderDiv.querySelector('.add-to-folder-btn').addEventListener('click', (e) => {
                         e.stopPropagation();
                         pendingFolderId = node.id;
                         hiddenFileInput.click();
                     });
-
                     container.appendChild(folderDiv);
                     container.appendChild(childrenContainer);
                     if (node.children && node.children.length > 0) {
@@ -919,17 +1682,13 @@
         function deleteNodeById(id) {
             function removeFromArray(arr) {
                 for (let i = 0; i < arr.length; i++) {
-                    if (arr[i].id === id) {
-                        arr.splice(i, 1);
-                        return true;
-                    }
+                    if (arr[i].id === id) { arr.splice(i, 1); return true; }
                     if (arr[i].children && arr[i].children.length > 0) {
                         if (removeFromArray(arr[i].children)) return true;
                     }
                 }
                 return false;
             }
-
             if (removeFromArray(fileTree)) {
                 if (currentFileId === id) {
                     currentFileId = null;
@@ -941,6 +1700,7 @@
                 }
                 saveTree();
                 renderFileTree();
+                updateAllErrors();
             }
         }
 
@@ -948,6 +1708,7 @@
             if (filename.endsWith('.html')) return '<img src="https://i.top4top.io/p_3814d46fv2.png" class="file-icon" alt="HTML">';
             if (filename.endsWith('.css')) return '<img src="https://h.top4top.io/p_3814pugha1.png" class="file-icon" alt="CSS">';
             if (filename.endsWith('.js')) return '<img src="https://g.top4top.io/p_38144dwh50.png" class="file-icon" alt="JS">';
+            if (filename.endsWith('.php')) return '<img src="https://i.top4top.io/p_3816gdsxd0.png" class="file-icon" alt="PHP">';
             if (filename.endsWith('.json')) return '📋';
             return '📄';
         }
@@ -962,8 +1723,9 @@
             updateLineNumbers();
             clearTimeout(highlightTimeout);
             updateHighlight();
-            // إعادة فحص زر العودة للأعلى بعد تحميل الملف
             toggleBackToTop();
+            updateAllErrors();
+            hideAutocomplete();
         }
 
         function saveCurrentFileContent() {
@@ -971,6 +1733,19 @@
             if (node && node.type === 'file') {
                 node.content = codeEditor.value;
                 saveTree();
+            }
+        }
+
+        function saveCurrentFileContentSoon() {
+            if (currentFileId) {
+                clearTimeout(window._saveTimeout);
+                window._saveTimeout = setTimeout(() => {
+                    const node = findNodeById(fileTree, currentFileId);
+                    if (node && node.type === 'file') {
+                        node.content = codeEditor.value;
+                        saveTree();
+                    }
+                }, 300);
             }
         }
 
@@ -985,25 +1760,13 @@
             return null;
         }
 
-        let saveTimeout;
         codeEditor.addEventListener('input', () => {
-            if (currentFileId) {
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    const node = findNodeById(fileTree, currentFileId);
-                    if (node && node.type === 'file') {
-                        node.content = codeEditor.value;
-                        saveTree();
-                    }
-                }, 300);
-            }
+            if (currentFileId) saveCurrentFileContentSoon();
         });
 
-        // ============ إنشاء ملف/مجلد ============
         function startNewFile() {
             pendingAction = 'file';
-            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-            <span>ملف جديد</span>`;
+            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg><span>ملف جديد</span>`;
             modalInput.value = '';
             createModal.classList.add('show');
             setTimeout(() => modalInput.focus(), 100);
@@ -1012,8 +1775,7 @@
 
         function startNewFolder() {
             pendingAction = 'folder';
-            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-            <span>مجلد جديد</span>`;
+            modalTitle.innerHTML = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><span>مجلد جديد</span>`;
             modalInput.value = '';
             createModal.classList.add('show');
             setTimeout(() => modalInput.focus(), 100);
@@ -1022,32 +1784,20 @@
 
         function confirmCreate() {
             const name = modalInput.value.trim();
-            if (!name) {
-                alert('⚠️ اكتب الاسم');
-                return;
-            }
-
+            if (!name) { alert('⚠️ اكتب الاسم'); return; }
             if (pendingAction === 'file') {
-                const newFile = {
-                    id: Date.now().toString(),
-                    name: name,
-                    type: 'file',
-                    content: name.endsWith('.html') ? '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title></title>\n</head>\n<body>\n  \n</body>\n</html>' : ''
-                };
+                let defaultContent = '';
+                if (name.endsWith('.html')) defaultContent = '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1">\n  <title></title>\n</head>\n<body>\n  \n</body>\n</html>';
+                else if (name.endsWith('.php')) defaultContent = '<?php\n\n?>';
+                const newFile = { id: Date.now().toString(), name, type: 'file', content: defaultContent };
                 fileTree.push(newFile);
             } else if (pendingAction === 'folder') {
-                const newFolder = {
-                    id: Date.now().toString(),
-                    name: name,
-                    type: 'folder',
-                    children: []
-                };
-                fileTree.push(newFolder);
+                fileTree.push({ id: Date.now().toString(), name, type: 'folder', children: [] });
             }
-
             saveTree();
             closeCreateModal();
             renderFileTree();
+            updateAllErrors();
         }
 
         function closeCreateModal() {
@@ -1055,7 +1805,6 @@
             pendingAction = null;
         }
 
-        // ============ استيراد ============
         function importFile() {
             pendingFolderId = null;
             hiddenFileInput.value = '';
@@ -1066,18 +1815,15 @@
         function handleFileImport(event) {
             const files = event.target.files;
             if (!files.length) return;
-
             Array.from(files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    const content = e.target.result;
                     const newFile = {
                         id: Date.now().toString() + Math.random(),
                         name: file.name,
                         type: 'file',
-                        content: content
+                        content: e.target.result
                     };
-
                     if (pendingFolderId) {
                         const folder = findNodeById(fileTree, pendingFolderId);
                         if (folder) folder.children.push(newFile);
@@ -1086,34 +1832,24 @@
                     }
                     saveTree();
                     renderFileTree();
+                    updateAllErrors();
                 };
                 reader.readAsText(file);
             });
-
             hiddenFileInput.value = '';
             pendingFolderId = null;
         }
 
-        // ============ نسخ ============
         function copyCurrentCode() {
-            if (!currentFileId) {
-                alert('⚠️ لا يوجد ملف مفتوح');
-                return;
-            }
+            if (!currentFileId) { alert('⚠️ لا يوجد ملف مفتوح'); return; }
             const node = findNodeById(fileTree, currentFileId);
             if (node) {
-                navigator.clipboard.writeText(node.content || '').then(() => {
-                    alert('✅ تم نسخ الكود');
-                }).catch(() => alert('فشل النسخ'));
+                navigator.clipboard.writeText(node.content || '').then(() => alert('✅ تم نسخ الكود')).catch(() => alert('فشل النسخ'));
             }
         }
 
-        // ============ تشغيل ============
         function runProject() {
-            if (currentFileId) {
-                saveCurrentFileContent();
-            }
-
+            if (currentFileId) saveCurrentFileContent();
             const allFiles = [];
             function flatten(nodes) {
                 nodes.forEach(node => {
@@ -1123,24 +1859,27 @@
             }
             flatten(fileTree);
 
-            let htmlContents = [];
-            let cssContents = [];
-            let jsContents = [];
-
-            allFiles.forEach(file => {
-                if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
-                    htmlContents.push(file.content);
-                } else if (file.name.endsWith('.css')) {
-                    cssContents.push(file.content);
-                } else if (file.name.endsWith('.js')) {
-                    jsContents.push(file.content);
+            let baseHtmlFile = null;
+            if (currentFileId) {
+                const current = findNodeById(fileTree, currentFileId);
+                if (current && (current.name.endsWith('.html') || current.name.endsWith('.htm'))) {
+                    baseHtmlFile = current;
                 }
-            });
+            }
+            if (!baseHtmlFile) {
+                baseHtmlFile = allFiles.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
+            }
+            if (!baseHtmlFile) {
+                baseHtmlFile = allFiles.find(f => f.name.endsWith('.html') || f.name.endsWith('.htm'));
+            }
 
-            let final = htmlContents.length > 0 ? htmlContents.join('\n') : '';
+            let final = baseHtmlFile ? baseHtmlFile.content : '';
             if (!final.trim()) {
                 final = '<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"><title>Preview</title></head>\n<body>\n<h1>لا يوجد محتوى</h1>\n</body>\n</html>';
             }
+
+            const cssContents = allFiles.filter(f => f.name.endsWith('.css')).map(f => f.content);
+            const jsContents = allFiles.filter(f => f.name.endsWith('.js')).map(f => f.content);
 
             if (cssContents.length > 0) {
                 const css = cssContents.join('\n');
@@ -1166,26 +1905,56 @@
             }
 
             previewContainer.classList.add('show');
-            btnClosePreview.classList.add('show');
             previewFrame.srcdoc = final;
+            // دعم فتح الروابط الخارجية
+            previewFrame.addEventListener('load', () => {
+                try {
+                    const doc = previewFrame.contentDocument;
+                    if (doc) {
+                        const links = doc.querySelectorAll('a[href]');
+                        links.forEach(link => {
+                            const href = link.getAttribute('href');
+                            if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                                const url = new URL(href, doc.baseURI);
+                                if (url.origin !== window.location.origin) {
+                                    link.setAttribute('target', '_blank');
+                                    link.setAttribute('rel', 'noopener noreferrer');
+                                }
+                            }
+                        });
+                    }
+                } catch(e) {}
+            });
+            // إضافة دعم الرجوع بالزر الخلفي للموبايل
+            window.history.pushState({ preview: true }, '');
             window.scrollTo(0, 0);
         }
 
         function closePreview() {
             previewContainer.classList.remove('show');
-            btnClosePreview.classList.remove('show');
             previewFrame.srcdoc = '';
+            // الرجوع للخلف إذا كان من الجوال
+            if (window.history.state && window.history.state.preview) {
+                window.history.back();
+            }
         }
+
+        window.addEventListener('popstate', (e) => {
+            if (previewContainer.classList.contains('show')) {
+                closePreview();
+            }
+        });
 
         function init() {
             updateLineNumbers();
             updateHighlight();
+            updateAllErrors();
             if (fileTree.length > 0) {
                 const firstFile = findFirstFile(fileTree);
                 if (firstFile) selectFile(firstFile);
             }
             renderFileTree();
-            toggleBackToTop(); // الحالة الأولية
+            toggleBackToTop();
         }
 
         function findFirstFile(nodes) {
